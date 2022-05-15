@@ -1,0 +1,83 @@
+<html>
+    <head></head>
+    <body>
+        <input type="text" id="name">
+        <button id="setname">设置名字</button>
+        <input type="text" id="text">
+        <button id="btn" type="button">发送</button>
+        <div id="container">
+
+        </div>
+        <script>
+            var ws = null;
+
+            // ws.onopen = function() {
+            //     ws.send('来自客户端的信息');
+            // }
+
+            // ws.onmessage = function(e) {
+            //     console.log(e.data);
+            // }
+
+            document.getElementById('setname').onclick = function() {
+                var name = document.getElementById('name').value;
+                if (name === '') return console.log('名字为空')
+                ws = new WebSocket('ws://localhost:2333');
+                ws.onopen = function() {
+                    ws.send(JSON.stringify({
+                        name: name, 
+                        type: 'setname'
+                    }));
+
+                }
+                document.getElementById('btn').onclick = send;
+                document.getElementById('text').onkeyup = function(e) {
+                    if (e.keyCode !== 13) return;
+                    send();
+                }
+                ws.onmessage = function(e) {
+                // var p = document.createElement('p');
+                // p.innerHTML = e.data;
+                // var  div = document.createElement('div');
+                // var data = JSON.parse(e.data);
+                
+                var con = document.getElementById('container');
+                con.insertBefore(createChatPanel(JSON.parse(e.data)), con.children[0]);
+                // document.body.appendChild(p);
+                // document.getElementById('container').appendChild(createChatPanel(JSON.parse(e.data)));
+                // document.body.innerHTML += '<p>' + e.data + '</p>'
+            }
+
+                document.getElementById('setname').setAttribute('disabled', true);
+            }
+
+            function createChatPanel(data) {
+                var name = data.name;
+                var text = data.text;
+                var div = document.createElement('div');
+                var span1 = document.createElement('span1');
+                var span2 = document.createElement('span2');
+                span1.innerHTML = name + ' ' + (new Date()).toString();
+                span2.innerHTML = text;
+
+                span1.style.color = '#00f';
+                span2.style.fontWeight = '900';
+
+                div.appendChild(span1);
+                div.appendChild(document.createElement('br'));
+                div.appendChild(span2);
+                return div;
+            }
+
+            function send() {
+                var text = document.getElementById('text');
+                    if (text.value === '') return;
+                    ws.send(JSON.stringify({
+                        text: text.value, 
+                        type: "chat"
+                    }));
+                    text.value = '';
+            }
+        </script>
+    </body>
+</html>
